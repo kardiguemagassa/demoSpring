@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 @SpringBootApplication
 public class DemoApplication {
 
+		// docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword// => generate password jenkins
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
 

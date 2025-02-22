@@ -1,0 +1,25 @@
+# Étape 1 : Construction du projet avec Maven
+FROM maven:3.9.9-amazoncorretto AS build
+
+WORKDIR /app
+
+# Copie du pom.xml et des fichiers sources nécessaires pour la compilation
+COPY pom.xml .
+COPY src ./src
+
+# Compilation et création du fichier JAR
+RUN mvn clean package -DskipTests
+
+# Étape 2 : Image d'exécution avec OpenJDK
+FROM openjdk:21-slim-bullseye
+
+WORKDIR /app
+
+# Copier le fichier JAR de l'étape de build
+COPY --from=build /app/target/*.jar /app/greeting.jar
+
+# Exposer le port 8080
+EXPOSE 8080
+
+# Commande pour démarrer l'application
+ENTRYPOINT ["java", "-jar", "/app/demo.jar"]

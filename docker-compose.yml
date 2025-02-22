@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: mhd02042017
+      POSTGRES_DB: sonar
+    ports:
+      - "5433:5432"  # PostgreSQL sera accessible en local sur 5433
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  springboot-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: springboot-app
+    depends_on:
+      - db
+    ports:
+      - "8081:8081"  # Aligne avec `server.port` de Spring Boot
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/sonar
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: mhd02042017
+    networks:
+      - app-network
+
+  sonarqube:
+    image: sonarqube
+    container_name: sonarqube
+    ports:
+      - "9000:9000"  # Accès à SonarQube via http://localhost:9000
+    environment:
+      SONARQUBE_JDBC_URL: jdbc:postgresql://db:5432/sonar
+      SONARQUBE_JDBC_USERNAME: postgres
+      SONARQUBE_JDBC_PASSWORD: mhd02042017
+    networks:
+      - app-network
+
+  jenkins:
+      image: jenkins/jenkins:lts
+      container_name: jenkins
+      ports:
+        - "8080:8080"  # Accès à Jenkins via http://localhost:8080
+        - "50000:50000"  # Pour les agents Jenkins
+      volumes:
+        - jenkins_home:/var/jenkins_home
+      networks:
+        - app-network
+volumes:
+  postgres_data:
+  jenkins_home:
+
+networks:
+  app-network:
+    driver: bridge
